@@ -111,14 +111,34 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // Expanding Cards
+    // Expanding Cards (Service Showcase) - Auto-switching
     const expandCards = document.querySelectorAll('.expand-card');
-    expandCards.forEach(card => {
+    let autoSwitchInterval;
+    let currentCardIndex = 0;
+
+    // Initialize auto-switching every 3 seconds
+    if (expandCards.length > 0) {
+        autoSwitchInterval = setInterval(() => {
+            expandCards[currentCardIndex].classList.remove('active');
+            currentCardIndex = (currentCardIndex + 1) % expandCards.length;
+            expandCards[currentCardIndex].classList.add('active');
+        }, 3000);
+    }
+
+    expandCards.forEach((card, index) => {
         card.addEventListener('click', () => {
+            // Immediately stop automatic switching if user interacts
+            if (autoSwitchInterval) {
+                clearInterval(autoSwitchInterval);
+                autoSwitchInterval = null;
+            }
+
             const wasActive = card.classList.contains('active');
             expandCards.forEach(c => c.classList.remove('active'));
+            
             if (!wasActive || window.innerWidth > 992) {
                 card.classList.add('active');
+                currentCardIndex = index; // Keep index in sync
                 
                 // On mobile, scroll to the card nicely
                 if (window.innerWidth <= 992) {
@@ -130,18 +150,37 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // Work Showcase — Tab Switching
+    // Work Showcase — Tab Switching - Auto-switching
     const workTabs = document.querySelectorAll('.work-tab');
     const workPanels = document.querySelectorAll('.work-panel');
+    let workAutoSwitchInterval;
+    let currentWorkTabIndex = 0;
 
-    workTabs.forEach(tab => {
+    const activateWorkTab = (index, isManualClick = false) => {
+        if (!workTabs[index]) return;
+        const category = workTabs[index].getAttribute('data-category');
+        workTabs.forEach(t => t.classList.remove('active'));
+        workPanels.forEach(p => p.classList.remove('active'));
+        workTabs[index].classList.add('active');
+        const targetPanel = document.getElementById('panel-' + category);
+        if (targetPanel) targetPanel.classList.add('active');
+    };
+
+    if (workTabs.length > 0) {
+        workAutoSwitchInterval = setInterval(() => {
+            currentWorkTabIndex = (currentWorkTabIndex + 1) % workTabs.length;
+            activateWorkTab(currentWorkTabIndex, false);
+        }, 3000);
+    }
+
+    workTabs.forEach((tab, index) => {
         tab.addEventListener('click', () => {
-            const category = tab.getAttribute('data-category');
-            workTabs.forEach(t => t.classList.remove('active'));
-            workPanels.forEach(p => p.classList.remove('active'));
-            tab.classList.add('active');
-            const targetPanel = document.getElementById('panel-' + category);
-            if (targetPanel) targetPanel.classList.add('active');
+            if (workAutoSwitchInterval) {
+                clearInterval(workAutoSwitchInterval);
+                workAutoSwitchInterval = null;
+            }
+            currentWorkTabIndex = index;
+            activateWorkTab(currentWorkTabIndex, true);
         });
     });
 
